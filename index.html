@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finansialku</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2d6a4f">
+</head>
+<body>
+
+  <div class="header">
+    <h1>Finansialku 💰</h1>
+    <p id="header-subtitle">Aplikasi pencatat keuangan kamu</p>
+    <button class="header-settings-btn" onclick="switchTab('pengaturan')">⚙️</button>
+  </div>
+
+  <!-- TAB: BERANDA -->
+  <div class="tab-content active" id="tab-beranda">
+    <div class="scorecard-wrap">
+      <div id="daily-scorecard"></div>
+    </div>
+    <div class="summary">
+      <div class="card card-income">
+        <p class="card-label">Pemasukan</p>
+        <p class="card-amount" id="total-income">Rp 0</p>
+      </div>
+      <div class="card card-expense">
+        <p class="card-label">Pengeluaran</p>
+        <p class="card-amount" id="total-expense">Rp 0</p>
+      </div>
+      <div class="card card-balance">
+        <p class="card-label">Saldo</p>
+        <p class="card-amount" id="total-balance">Rp 0</p>
+      </div>
+    </div>
+    <div class="section-pad">
+      <div id="streak-card" class="streak-card"></div>
+    </div>
+    <div id="budget-alert"></div>
+    <div id="goal-preview"></div>
+    <div class="form-section">
+      <h2 class="section-title">Tambah Transaksi</h2>
+      <div class="form-group">
+        <label>Tanggal</label>
+        <input type="date" id="input-date">
+      </div>
+      <div class="form-group">
+        <label>Keterangan</label>
+        <input type="text" id="input-desc" placeholder="cth: Kerja, Makan siang...">
+      </div>
+      <div class="form-group">
+        <label>Jumlah (Rp)</label>
+        <input type="number" id="input-amount" placeholder="cth: 50000">
+      </div>
+      <div class="form-group">
+        <label>Jenis</label>
+        <div class="type-toggle">
+          <button class="type-btn active" id="btn-income" onclick="setType('income')">⬆ Pemasukan</button>
+          <button class="type-btn" id="btn-expense" onclick="setType('expense')">⬇ Pengeluaran</button>
+        </div>
+      </div>
+      <!-- Income Type (income only) -->
+      <div class="form-group" id="income-type-group" style="display:none">
+        <label>Tipe Pemasukan</label>
+        <div class="type-toggle">
+          <button class="type-btn active" id="btn-harian-inc" onclick="setIncomeType('harian')">
+            ⚡ Harian
+          </button>
+          <button class="type-btn" id="btn-nonharian-inc" onclick="setIncomeType('nonharian')">
+            📅 Non-Harian
+          </button>
+        </div>
+      </div>
+      <div class="form-group" id="expense-type-group" style="display:none">
+        <label>Tipe Pengeluaran</label>
+        <div class="type-toggle">
+          <button class="type-btn active" id="btn-harian-exp" onclick="setExpenseType('harian')">⚡ Harian</button>
+          <button class="type-btn" id="btn-bulanan-exp" onclick="setExpenseType('bulanan')">📅 Bulanan</button>
+        </div>
+      </div>
+      <div class="form-group" id="category-group" style="display:none">
+        <label>Kategori</label>
+        <div class="cat-pills">
+          <button class="cat-btn active" data-cat="transportasi" onclick="selectCategory(this)">🛵 Transportasi</button>
+          <button class="cat-btn" data-cat="makan" onclick="selectCategory(this)">🍱 Makan & Minum</button>
+          <button class="cat-btn" data-cat="keluarga" onclick="selectCategory(this)">👨‍👩‍👧 Keluarga</button>
+          <button class="cat-btn" data-cat="pulsa" onclick="selectCategory(this)">📱 Pulsa & Internet</button>
+          <button class="cat-btn" data-cat="tinggal" onclick="selectCategory(this)">🏠 Tempat Tinggal</button>
+          <button class="cat-btn" data-cat="lainnya" onclick="selectCategory(this)">💰 Lainnya</button>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="addTransaction()">+ Simpan Transaksi</button>
+    </div>
+  </div>
+
+  <!-- TAB: RIWAYAT -->
+  <div class="tab-content" id="tab-riwayat">
+    <div class="form-section">
+      <div class="sub-tabs">
+        <button class="sub-tab active" id="subtab-harian" onclick="switchSubTab('harian')">Harian</button>
+        <button class="sub-tab" id="subtab-mingguan" onclick="switchSubTab('mingguan')">Mingguan</button>
+        <button class="sub-tab" id="subtab-bulanan" onclick="switchSubTab('bulanan')">Bulanan</button>
+      </div>
+      <div class="sub-content active" id="sub-harian">
+        <div class="period-picker">
+          <button class="period-nav-btn" onclick="shiftDate(-1)">‹</button>
+          <input type="date" id="picker-harian" onchange="renderHarian()">
+          <button class="period-nav-btn" onclick="shiftDate(1)">›</button>
+        </div>
+        <div id="summary-harian"></div>
+        <div id="budget-harian"></div>
+        <div id="breakdown-harian"></div>
+        <div id="list-harian"></div>
+      </div>
+      <div class="sub-content" id="sub-mingguan">
+        <div class="period-picker">
+          <button class="period-nav-btn" onclick="shiftWeek(-1)">‹</button>
+          <input type="week" id="picker-mingguan" onchange="renderMingguan()">
+          <button class="period-nav-btn" onclick="shiftWeek(1)">›</button>
+        </div>
+        <div id="week-label" class="week-label"></div>
+        <div id="summary-mingguan"></div>
+        <div id="breakdown-mingguan"></div>
+        <div id="list-mingguan"></div>
+      </div>
+      <div class="sub-content" id="sub-bulanan">
+        <div class="period-picker">
+          <button class="period-nav-btn" onclick="shiftMonth(-1)">‹</button>
+          <input type="month" id="picker-bulanan" onchange="renderBulanan()">
+          <button class="period-nav-btn" onclick="shiftMonth(1)">›</button>
+        </div>
+        <div id="summary-bulanan"></div>
+        <div id="breakdown-bulanan"></div>
+        <div id="list-bulanan"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: KALKULATOR -->
+  <div class="tab-content" id="tab-kalkulator">
+    <div class="form-section">
+      <h2 class="section-title">🧮 Kalkulator Target Harian</h2>
+      <div id="calc-lock" class="lock-message">
+        <div class="lock-icon">🔒</div>
+        <p class="lock-title">Fitur Terkunci</p>
+        <p class="lock-desc">Catat keuangan selama <strong>3 hari berturut-turut</strong> untuk membuka Kalkulator.</p>
+        <div id="calc-lock-bar" class="lock-progress-wrap"></div>
+        <p class="lock-tip">💡 Catat pemasukan atau pengeluaran hari ini untuk mulai streak!</p>
+      </div>
+      <div id="calc-main" style="display:none">
+        <p class="tab-desc">Hitung berapa penghasilan harian yang kamu butuhkan.</p>
+        <div class="calc-block">
+          <p class="calc-block-title">🏠 Biaya Hidup Bulanan</p>
+          <div id="calc-living-costs">
+            <div class="calc-row"><span class="calc-row-label">Tempat Tinggal</span><input type="number" class="calc-input" placeholder="0"></div>
+            <div class="calc-row"><span class="calc-row-label">Makan & Minum</span><input type="number" class="calc-input" placeholder="0"></div>
+          </div>
+          <div class="calc-add-row">
+            <input type="text" id="new-living-name" placeholder="Nama biaya baru...">
+            <button class="calc-add-btn" onclick="addCalcRow('living')">+ Tambah</button>
+          </div>
+        </div>
+        <div class="calc-block">
+          <p class="calc-block-title">🛵 Biaya Operasional Harian</p>
+          <div id="calc-working-costs">
+            <div class="calc-row"><span class="calc-row-label">Bensin / Baterai</span><input type="number" class="calc-input" placeholder="0"></div>
+            <div class="calc-row"><span class="calc-row-label">Sewa Kendaraan</span><input type="number" class="calc-input" placeholder="0"></div>
+          </div>
+          <div class="calc-add-row">
+            <input type="text" id="new-working-name" placeholder="Nama biaya baru...">
+            <button class="calc-add-btn" onclick="addCalcRow('working')">+ Tambah</button>
+          </div>
+        </div>
+        <div class="calc-block">
+          <p class="calc-block-title">💵 Penghasilan Lain (Bulanan)</p>
+          <p class="calc-block-desc">Penghasilan lain yang membantu biaya hidupmu.</p>
+          <div id="calc-other-income">
+            <div class="calc-row"><span class="calc-row-label">Pasangan</span><input type="number" class="calc-input" placeholder="0"></div>
+          </div>
+          <div class="calc-add-row">
+            <input type="text" id="new-income-name" placeholder="Nama penghasilan baru...">
+            <button class="calc-add-btn" onclick="addCalcRow('income')">+ Tambah</button>
+          </div>
+        </div>
+        <div class="calc-block">
+          <p class="calc-block-title">🏦 Target Tabungan Harian</p>
+          <div class="calc-row">
+            <span class="calc-row-label">Nabung per hari</span>
+            <input type="number" class="calc-input" id="calc-daily-saving" placeholder="0">
+          </div>
+        </div>
+        <button class="submit-btn" onclick="calculateDaily()">🧮 Hitung Target Harian</button>
+        <div id="calc-results" class="calc-results" style="display:none">
+          <p class="calc-result-title">📊 Hasil Perhitungan</p>
+          <div class="calc-result-row"><span>Total Biaya Hidup Bulanan</span><span id="res-living" class="calc-result-value"></span></div>
+          <div class="calc-result-row"><span>Total Biaya Operasional Harian</span><span id="res-working" class="calc-result-value"></span></div>
+          <div class="calc-result-row"><span>Target Tabungan Harian</span><span id="res-saving" class="calc-result-value"></span></div>
+          <div class="calc-result-row"><span>Penghasilan Lain (Bulanan)</span><span id="res-other-income" class="calc-result-value"></span></div>
+          <div class="calc-result-highlight">
+            <p class="calc-result-highlight-label">🎯 Target Penghasilan Harian</p>
+            <p id="res-daily-target" class="calc-result-highlight-amount"></p>
+            <p id="res-daily-note" class="calc-result-highlight-note"></p>
+          </div>
+          <button class="copy-target-btn" onclick="copyToTarget()">📋 Salin ke Target Harian</button>
+          <button class="download-btn-full" onclick="downloadCalcResult()">⬇ Unduh Hasil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TARGET -->
+  <div class="tab-content" id="tab-target">
+    <div class="form-section">
+      <h2 class="section-title">🚨 Batas Budget Harian</h2>
+      <p class="tab-desc">Set batas pengeluaran harian agar pengeluaranmu terkontrol setiap hari.</p>
+      <div class="budget-current-card">
+        <p class="budget-current-label">Budget Harian saat ini</p>
+        <p class="budget-current-amount" id="budget-current-amount">Belum diset</p>
+      </div>
+      <div id="budget-status" class="budget-status"></div>
+      <div class="form-group" style="margin-top:16px">
+        <label>Ubah Batas Pengeluaran Harian (Rp)</label>
+        <input type="number" id="input-budget" placeholder="cth: 200000">
+      </div>
+      <button class="submit-btn" onclick="saveBudget()">Simpan Batas Budget</button>
+      <div class="divider"></div>
+      <div class="target-block">
+        <p class="target-period-title">📅 Target Harian</p>
+        <div id="goal-harian-display"></div>
+        <div class="form-group">
+          <label>Nama Target Harian</label>
+          <input type="text" id="input-goal-harian-name" placeholder="cth: Nabung harian">
+        </div>
+        <div class="form-group">
+          <label>Jumlah (Rp)</label>
+          <input type="number" id="input-goal-harian-amount" placeholder="cth: 50000">
+        </div>
+        <button class="submit-btn-sm" onclick="saveGoal('harian')">Simpan Target Harian</button>
+      </div>
+      <div class="target-block">
+        <p class="target-period-title">📆 Target Mingguan</p>
+        <div id="mingguan-lock" class="lock-message lock-message-sm">
+          <span class="lock-icon-sm">🔒</span>
+          <div><p class="lock-title-sm">Terkunci — butuh 7 hari data tercatat</p><div id="mingguan-lock-bar" class="lock-progress-wrap"></div></div>
+        </div>
+        <div id="mingguan-main" style="display:none">
+          <div id="goal-mingguan-display"></div>
+          <div class="form-group">
+            <label>Nama Target Mingguan</label>
+            <input type="text" id="input-goal-mingguan-name" placeholder="cth: Nabung mingguan">
+          </div>
+          <div class="form-group">
+            <label>Jumlah (Rp)</label>
+            <input type="number" id="input-goal-mingguan-amount" placeholder="cth: 300000">
+          </div>
+          <button class="submit-btn-sm" onclick="saveGoal('mingguan')">Simpan Target Mingguan</button>
+        </div>
+      </div>
+      <div class="target-block">
+        <p class="target-period-title">🗓 Target Bulanan</p>
+        <div id="bulanan-lock" class="lock-message lock-message-sm">
+          <span class="lock-icon-sm">🔒</span>
+          <div><p class="lock-title-sm">Terkunci — butuh 14 hari data tercatat</p><div id="bulanan-lock-bar" class="lock-progress-wrap"></div></div>
+        </div>
+        <div id="bulanan-main" style="display:none">
+          <div id="goal-bulanan-display"></div>
+          <div class="form-group">
+            <label>Nama Target Bulanan</label>
+            <input type="text" id="input-goal-bulanan-name" placeholder="cth: Dana darurat">
+          </div>
+          <div class="form-group">
+            <label>Jumlah (Rp)</label>
+            <input type="number" id="input-goal-bulanan-amount" placeholder="cth: 1000000">
+          </div>
+          <button class="submit-btn-sm" onclick="saveGoal('bulanan')">Simpan Target Bulanan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: INSIGHT -->
+  <div class="tab-content" id="tab-insight">
+    <div class="form-section">
+      <h2 class="section-title">💡 Insight Keuangan</h2>
+
+      <!-- Locked state -->
+      <div id="insight-lock" class="lock-message">
+        <div class="lock-icon">🔒</div>
+        <p class="lock-title">Fitur Terkunci</p>
+        <p class="lock-desc">Catat keuangan di <strong>14 hari berbeda</strong> untuk membuka analisis keuangan personalmu. Tidak harus berturut-turut!</p>
+        <div id="insight-lock-bar" class="lock-progress-wrap"></div>
+        <p class="lock-tip">💡 Semakin lengkap datamu, semakin akurat analisanya!</p>
+      </div>
+
+      <!-- Unlocked state -->
+      <div id="insight-main" style="display:none">
+        <div class="insight-intro-card">
+          <p class="insight-intro-title">🤖 Analisis AI Keuanganmu</p>
+          <p class="insight-intro-desc">Berdasarkan data transaksi 14 hari terakhir, AI akan menganalisis kebiasaan keuanganmu dan memberikan saran personal dalam Bahasa Indonesia.</p>
+          <p class="insight-intro-note">⚠️ Fitur ini membutuhkan koneksi internet</p>
+        </div>
+
+        <button class="insight-generate-btn" id="insight-btn" onclick="generateInsight()">
+          ✨ Analisis Keuanganku Sekarang
+        </button>
+
+        <div id="insight-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PENGATURAN -->
+  <div class="tab-content" id="tab-pengaturan">
+    <div class="form-section">
+      <h2 class="section-title">⚙️ Pengaturan</h2>
+      <div class="settings-card">
+        <p class="settings-label">Versi Aplikasi</p>
+        <p class="settings-value">Finansialku v1.0</p>
+      </div>
+      <div class="settings-card">
+        <p class="settings-label">Streak Saat Ini</p>
+        <p class="settings-value" id="settings-streak">0 hari 🔥</p>
+      </div>
+      <div class="settings-card">
+        <p class="settings-label">Total Transaksi Tersimpan</p>
+        <p class="settings-value" id="total-transactions">0 transaksi</p>
+      </div>
+      <div class="settings-card">
+        <p class="settings-label">Penyimpanan</p>
+        <p class="settings-value">Lokal di perangkat kamu</p>
+      </div>
+      <div id="badge-settings-section" style="display:none">
+        <div class="badge-earned-card">
+          <p class="badge-earned-icon">🏆</p>
+          <p class="badge-earned-title">Driver Finansial Sejati</p>
+          <p class="badge-earned-sub">21 Hari Konsisten — Luar biasa!</p>
+          <button class="submit-btn" onclick="showBadgeModal()" style="margin-top:12px">Lihat & Bagikan Badge</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="history-header">
+        <h2 class="section-title">📋 Semua Transaksi</h2>
+        <button class="download-btn" onclick="downloadCSV()">⬇ CSV</button>
+      </div>
+      <div id="category-breakdown"></div>
+      <div id="history-list"></div>
+      <div class="divider"></div>
+      <button class="danger-btn" onclick="confirmReset()">🗑 Hapus Semua Data</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('beranda')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Beranda</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('riwayat')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Riwayat</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('kalkulator')">
+      <span class="nav-icon">🧮</span>
+      <span class="nav-label">Kalkulator</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('target')">
+      <span class="nav-icon">🎯</span>
+      <span class="nav-label">Target</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('insight')">
+      <span class="nav-icon">💡</span>
+      <span class="nav-label">Insight</span>
+    </button>
+  </nav>
+
+  <!-- BADGE MODAL -->
+  <div id="badge-modal" class="modal-overlay" style="display:none" onclick="closeBadgeModal(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('badge-modal').style.display='none'">✕</button>
+      <div class="badge-display">
+        <div class="badge-inner">
+          <p class="badge-trophy">🏆</p>
+          <p class="badge-main-title">DRIVER FINANSIAL</p>
+          <p class="badge-main-title">SEJATI</p>
+          <p class="badge-streak-text">21 Hari Konsisten</p>
+          <p class="badge-streak-text">Catat Keuangan Harian</p>
+          <p class="badge-app-name">Finansialku 💰</p>
+          <p id="badge-date" class="badge-date"></p>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="downloadBadge()" style="margin-top:14px">⬇ Unduh Badge</button>
+      <button class="whatsapp-btn" onclick="shareToWhatsApp()">📲 Bagikan ke WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- CELEBRATION MODAL -->
+  <div id="celebration-modal" class="celebration-overlay" style="display:none">
+    <div class="celebration-box">
+      <p id="celebration-emoji" class="celebration-emoji"></p>
+      <p id="celebration-title" class="celebration-title"></p>
+      <p id="celebration-desc" class="celebration-desc"></p>
+      <button class="submit-btn" onclick="closeCelebration()">Mantap! 💪</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>

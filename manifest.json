@@ -1,6 +1,6 @@
 {
-  "name": "Finansialku",
-  "short_name": "Finansialku",
+  "name": "Hitung Untung",
+  "short_name": "HitungUntung",
   "description": "Aplikasi pencatat keuangan untuk pekerja gig Indonesia",
   "start_url": "./index.html",
   "display": "standalone",

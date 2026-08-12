@@ -803,3 +803,25 @@ body {
 .daily-budget-footer.safe    { color: #2d6a4f; }
 .daily-budget-footer.warning { color: #e65100; }
 .daily-budget-footer.danger  { color: #c0392b; }
+/* ── LANGUAGE TOGGLE ─────────────────────────── */
+.lang-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.lang-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #888;
+}
+.lang-btn.active {
+  border-color: #2d6a4f;
+  background: #eaf4ef;
+  color: #2d6a4f;
+}

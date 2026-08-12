@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finansialku-v13';
+const CACHE_NAME = 'finansialku-v14';
 const FILES_TO_CACHE = [
   './',
   './index.html',

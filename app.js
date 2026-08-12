@@ -1,3 +1,135 @@
+// ─── LANGUAGE ────────────────────────────────────────
+let currentLang = localStorage.getItem('lang') || 'id';
+
+const LANG = {
+  id: {
+    appSubtitle:    'Aplikasi pencatat keuangan kamu',
+    beranda:        'Beranda',
+    riwayat:        'Riwayat',
+    kalkulator:     'Kalkulator',
+    target:         'Target',
+    insight:        'Insight',
+    pengaturan:     'Pengaturan',
+    tambahTransaksi:'Tambah Transaksi',
+    tanggal:        'Tanggal',
+    keterangan:     'Keterangan',
+    keteranganPh:   'cth: Narik, Makan siang...',
+    jumlah:         'Jumlah (Rp)',
+    jumlahPh:       'cth: 50000',
+    jenis:          'Jenis',
+    pemasukan:      '⬆ Pemasukan',
+    pengeluaran:    '⬇ Pengeluaran',
+    simpan:         '+ Simpan Transaksi',
+    tipeIncome:     'Tipe Pemasukan',
+    harian:         '⚡ Harian',
+    nonHarian:      '📅 Non-Harian',
+    tipeExpense:    'Tipe Pengeluaran',
+    bulanan:        '📅 Bulanan',
+    kategori:       'Kategori',
+    yukKejar:       'Yuk Kejar Target!',
+    hampirSampai:   'Hampir Sampai!',
+    terusSemangat:  'Terus Semangat!',
+    targetTercapai: 'Target Tercapai!',
+    targetHarian:   'Target: ',
+    saldo:          'Saldo',
+    langLabel:      'Bahasa',
+  },
+  en: {
+    appSubtitle:    'Your personal finance tracker',
+    beranda:        'Home',
+    riwayat:        'History',
+    kalkulator:     'Calculator',
+    target:         'Target',
+    insight:        'Insight',
+    pengaturan:     'Settings',
+    tambahTransaksi:'Add Transaction',
+    tanggal:        'Date',
+    keterangan:     'Description',
+    keteranganPh:   'e.g: Narik, Lunch...',
+    jumlah:         'Amount (Rp)',
+    jumlahPh:       'e.g: 50000',
+    jenis:          'Type',
+    pemasukan:      '⬆ Income',
+    pengeluaran:    '⬇ Expense',
+    simpan:         '+ Save Transaction',
+    tipeIncome:     'Income Type',
+    harian:         '⚡ Daily',
+    nonHarian:      '📅 Non-Daily',
+    tipeExpense:    'Expense Type',
+    bulanan:        '📅 Monthly',
+    kategori:       'Category',
+    yukKejar:       'Chase Your Target!',
+    hampirSampai:   'Almost There!',
+    terusSemangat:  'Keep Going!',
+    targetTercapai: 'Target Achieved!',
+    targetHarian:   'Target: ',
+    saldo:          'Balance',
+    langLabel:      'Language',
+  }
+};
+
+function t(key) {
+  return LANG[currentLang][key] || LANG['id'][key] || key;
+}
+
+function switchLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  applyLanguage();
+}
+
+function applyLanguage() {
+  const L = LANG[currentLang];
+  // Header subtitle
+  const subtitle = document.getElementById('header-subtitle');
+  if (subtitle) subtitle.textContent = L.appSubtitle;
+  // Nav labels
+  const navLabels = document.querySelectorAll('.nav-label');
+  const navKeys   = ['beranda','riwayat','kalkulator','target','insight'];
+  navLabels.forEach((el, i) => { if (navKeys[i]) el.textContent = L[navKeys[i]]; });
+  // Form labels
+  const labelMap = {
+    'label-tanggal':    'tanggal',
+    'label-keterangan': 'keterangan',
+    'label-jumlah':     'jumlah',
+    'label-jenis':      'jenis',
+    'label-tipeincome': 'tipeIncome',
+    'label-tipeexpense':'tipeExpense',
+    'label-kategori':   'kategori',
+  };
+  Object.entries(labelMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = L[key];
+  });
+  // Buttons
+  const incomeBtn  = document.getElementById('btn-income');
+  const expenseBtn = document.getElementById('btn-expense');
+  const simpanBtn  = document.getElementById('btn-simpan');
+  const harianIncBtn   = document.getElementById('btn-harian-inc');
+  const nonHarianBtn   = document.getElementById('btn-nonharian-inc');
+  const harianExpBtn   = document.getElementById('btn-harian-exp');
+  const bulananExpBtn  = document.getElementById('btn-bulanan-exp');
+  if (incomeBtn)     incomeBtn.textContent     = L.pemasukan;
+  if (expenseBtn)    expenseBtn.textContent    = L.pengeluaran;
+  if (simpanBtn)     simpanBtn.textContent     = L.simpan;
+  if (harianIncBtn)  harianIncBtn.textContent  = L.harian;
+  if (nonHarianBtn)  nonHarianBtn.textContent  = L.nonHarian;
+  if (harianExpBtn)  harianExpBtn.textContent  = L.harian;
+  if (bulananExpBtn) bulananExpBtn.textContent = L.bulanan;
+  // Input placeholders
+  const descInput   = document.getElementById('input-desc');
+  const amountInput = document.getElementById('input-amount');
+  if (descInput)   descInput.placeholder   = L.keteranganPh;
+  if (amountInput) amountInput.placeholder = L.jumlahPh;
+  // Language toggle buttons
+  const btnId  = document.getElementById('lang-btn-id');
+  const btnEn  = document.getElementById('lang-btn-en');
+  if (btnId) btnId.classList.toggle('active', currentLang === 'id');
+  if (btnEn) btnEn.classList.toggle('active', currentLang === 'en');
+  // Re-render scorecard with new language
+  renderScorecard();
+}
+
 // ─── DATA ────────────────────────────────────────────
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let selectedType = 'income';
@@ -34,14 +166,22 @@ window.onload = function() {
   renderScorecard();
   renderCategoryBreakdown();
   initRiwayat();
+  restoreCalcInputs();
+  applyLanguage();
 }
 
 // Auto-refresh date every minute (in case app stays open overnight)
 setInterval(function() {
+  const today     = getToday();
   const dateInput = document.getElementById('input-date');
-  if (dateInput && dateInput.value !== getToday()) {
-    dateInput.value = getToday();
+  const harianPicker = document.getElementById('picker-harian');
+  if (dateInput && dateInput.value !== today) {
+    dateInput.value = today;
     renderScorecard();
+  }
+  if (harianPicker && harianPicker.value !== today) {
+    harianPicker.value = today;
+    renderHarian();
   }
 }, 60000);
 
@@ -100,11 +240,15 @@ function renderScorecard() {
 
   // No target set yet
   if (dailyTarget === 0) {
+    const hintText = currentLang === 'en'
+      ? 'Set your target in Calculator to see daily progress 🎯'
+      : 'Set target di Kalkulator untuk melihat progress harianmu 🎯';
+    const ctaText = currentLang === 'en' ? 'Open Calculator →' : 'Buka Kalkulator →';
     scorecard.innerHTML = `
       <div class="scorecard scorecard-neutral">
         <p class="scorecard-date">${today}</p>
-        <p class="scorecard-hint">Set target di Kalkulator untuk melihat progress harianmu 🎯</p>
-        <button class="scorecard-cta" onclick="switchTab('kalkulator')">Buka Kalkulator →</button>
+        <p class="scorecard-hint">${hintText}</p>
+        <button class="scorecard-cta" onclick="switchTab('kalkulator')">${ctaText}</button>
       </div>
     `;
     return;
@@ -114,27 +258,30 @@ function renderScorecard() {
   const percent = Math.min((todayIncome / dailyTarget) * 100, 100);
   const done    = gap <= 0;
 
+  const isEN = currentLang === 'en';
   let emoji, status, gapText;
   if (done) {
-    emoji = '✅'; status = 'Target Tercapai!';
-    gapText = `Lebih ${formatRupiah(Math.abs(gap))} dari target 🔥`;
+    emoji = '✅'; status = t('targetTercapai');
+    gapText = isEN ? `${formatRupiah(Math.abs(gap))} above target 🔥` : `Lebih ${formatRupiah(Math.abs(gap))} dari target 🔥`;
   } else if (percent >= 75) {
-    emoji = '⚡'; status = 'Hampir Sampai!';
-    gapText = `Kurang ${formatRupiah(gap)} lagi`;
+    emoji = '⚡'; status = t('hampirSampai');
+    gapText = isEN ? `${formatRupiah(gap)} more to go` : `Kurang ${formatRupiah(gap)} lagi`;
   } else if (percent >= 40) {
-    emoji = '💪'; status = 'Terus Semangat!';
-    gapText = `Kurang ${formatRupiah(gap)} lagi`;
+    emoji = '💪'; status = t('terusSemangat');
+    gapText = isEN ? `${formatRupiah(gap)} more to go` : `Kurang ${formatRupiah(gap)} lagi`;
   } else {
-    emoji = '🎯'; status = 'Yuk Kejar Target!';
-    gapText = `Kurang ${formatRupiah(gap)} lagi`;
+    emoji = '🎯'; status = t('yukKejar');
+    gapText = isEN ? `${formatRupiah(gap)} more to go` : `Kurang ${formatRupiah(gap)} lagi`;
   }
+
+  const incomeLabel = isEN ? 'Today\'s income' : 'Pemasukan hari ini';
 
   scorecard.innerHTML = `
     <div class="scorecard ${done ? 'scorecard-done' : 'scorecard-active'}">
       <p class="scorecard-date">${today}</p>
       <div class="scorecard-body">
         <div class="scorecard-left">
-          <p class="scorecard-income-label">Pemasukan hari ini</p>
+          <p class="scorecard-income-label">${incomeLabel}</p>
           <p class="scorecard-income-amount">${formatRupiah(todayIncome)}</p>
           <p class="scorecard-gap-text">${gapText}</p>
         </div>
@@ -147,7 +294,7 @@ function renderScorecard() {
         <div class="sc-bar-fill ${done ? 'sc-bar-done' : ''}" style="width:${percent}%"></div>
       </div>
       <div class="sc-footer">
-        <span>Target: ${formatRupiah(dailyTarget)}</span>
+        <span>${isEN ? 'Target' : 'Target'}: ${formatRupiah(dailyTarget)}</span>
         <span>${Math.round(percent)}%</span>
       </div>
     </div>
@@ -235,7 +382,7 @@ function switchTab(tabName) {
   document.getElementById('tab-' + tabName).classList.add('active');
 
   if (tabName === 'beranda')    { setDefaultDate(); renderScorecard(); }
-  if (tabName === 'riwayat')    { refreshActiveSubTab(); }
+  if (tabName === 'riwayat')    { document.getElementById('picker-harian').value = getToday(); refreshActiveSubTab(); }
   if (tabName === 'pengaturan') { renderHistory(); renderCategoryBreakdown(); }
   if (tabName === 'insight')    { renderInsightLock(); }
 
@@ -600,6 +747,26 @@ function addCalcRow(group) {
   document.getElementById(contMap[group]).appendChild(row);
   nameInput.value = '';
 }
+function restoreCalcInputs() {
+  const saved = JSON.parse(localStorage.getItem('calcInputs') || 'null');
+  if (!saved) return;
+  // Restore the default rows with saved totals split evenly
+  const livingInputs  = document.querySelectorAll('#calc-living-costs .calc-input');
+  const workingInputs = document.querySelectorAll('#calc-working-costs .calc-input');
+  const incomeInputs  = document.querySelectorAll('#calc-other-income .calc-input');
+  // Distribute saved total into first input of each section
+  if (livingInputs[0])  livingInputs[0].value  = saved.living  || 0;
+  if (workingInputs[0]) workingInputs[0].value  = saved.working || 0;
+  if (incomeInputs[0])  incomeInputs[0].value   = saved.income  || 0;
+  const savingInput = document.getElementById('calc-daily-saving');
+  if (savingInput) savingInput.value = saved.saving || 0;
+  // Auto-show results if we have a saved target
+  const savedTarget = localStorage.getItem('calculatedDailyTarget');
+  if (savedTarget && parseInt(savedTarget) > 0) {
+    calculateDaily();
+  }
+}
+
 function getCalcTotal(containerId) {
   let total = 0;
   document.querySelectorAll(`#${containerId} .calc-input`).forEach(i => { total += parseFloat(i.value) || 0; });
@@ -613,6 +780,15 @@ function calculateDaily() {
   const dailyLiving  = totalLiving / 30;
   const rawTarget    = dailyLiving + totalWorking + dailySaving;
   const netTarget    = Math.max(rawTarget - (totalIncome / 30), 0);
+
+  // Save calculator inputs so they survive app close/reopen
+  const calcData = {
+    living:  totalLiving,
+    working: totalWorking,
+    income:  totalIncome,
+    saving:  dailySaving
+  };
+  localStorage.setItem('calcInputs', JSON.stringify(calcData));
 
   document.getElementById('res-living').textContent       = formatRupiah(totalLiving);
   document.getElementById('res-working').textContent      = formatRupiah(totalWorking);
@@ -1027,9 +1203,13 @@ function dateInRange(dateStr, from, to) {
 // ── Navigation arrows ────────────────────────────────
 function shiftDate(dir) {
   const input = document.getElementById('picker-harian');
-  const d = new Date(input.value + 'T00:00:00');
+  const parts = input.value.split('-');
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   d.setDate(d.getDate() + dir);
-  input.value = d.toISOString().split('T')[0];
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const dd   = String(d.getDate()).padStart(2, '0');
+  input.value = `${yyyy}-${mm}-${dd}`;
   renderHarian();
 }
 

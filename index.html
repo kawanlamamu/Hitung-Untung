@@ -43,19 +43,19 @@
     <div class="form-section">
       <h2 class="section-title">Tambah Transaksi</h2>
       <div class="form-group">
-        <label>Tanggal</label>
+        <label id="label-tanggal">Tanggal</label>
         <input type="date" id="input-date">
       </div>
       <div class="form-group">
-        <label>Keterangan</label>
+        <label id="label-keterangan">Keterangan</label>
         <input type="text" id="input-desc" placeholder="cth: Kerja, Makan siang...">
       </div>
       <div class="form-group">
-        <label>Jumlah (Rp)</label>
+        <label id="label-jumlah">Jumlah (Rp)</label>
         <input type="number" id="input-amount" placeholder="cth: 50000">
       </div>
       <div class="form-group">
-        <label>Jenis</label>
+        <label id="label-jenis">Jenis</label>
         <div class="type-toggle">
           <button class="type-btn active" id="btn-income" onclick="setType('income')">⬆ Pemasukan</button>
           <button class="type-btn" id="btn-expense" onclick="setType('expense')">⬇ Pengeluaran</button>
@@ -63,7 +63,7 @@
       </div>
       <!-- Income Type (income only) -->
       <div class="form-group" id="income-type-group" style="display:none">
-        <label>Tipe Pemasukan</label>
+        <label id="label-tipeincome">Tipe Pemasukan</label>
         <div class="type-toggle">
           <button class="type-btn active" id="btn-harian-inc" onclick="setIncomeType('harian')">
             ⚡ Harian
@@ -74,7 +74,7 @@
         </div>
       </div>
       <div class="form-group" id="expense-type-group" style="display:none">
-        <label>Tipe Pengeluaran</label>
+        <label id="label-tipeexpense">Tipe Pengeluaran</label>
         <div class="type-toggle">
           <button class="type-btn active" id="btn-harian-exp" onclick="setExpenseType('harian')">⚡ Harian</button>
           <button class="type-btn" id="btn-bulanan-exp" onclick="setExpenseType('bulanan')">📅 Bulanan</button>
@@ -91,7 +91,7 @@
           <button class="cat-btn" data-cat="lainnya" onclick="selectCategory(this)">💰 Lainnya</button>
         </div>
       </div>
-      <button class="submit-btn" onclick="addTransaction()">+ Simpan Transaksi</button>
+      <button class="submit-btn" id="btn-simpan" onclick="addTransaction()">+ Simpan Transaksi</button>
     </div>
   </div>
 
@@ -317,7 +317,7 @@
       <h2 class="section-title">⚙️ Pengaturan</h2>
       <div class="settings-card">
         <p class="settings-label">Versi Aplikasi</p>
-        <p class="settings-value">Hitung Untung v.2 by @kawanlamamu</p>
+        <p class="settings-value">Hitung Untung v.2 by <a href="https://www.instagram.com/kawanlamamu/" target="_blank" rel="noopener" style="color:#2d6a4f;text-decoration:none;font-weight:700">@kawanlamamu</a> 📸</p>
       </div>
       <div class="settings-card">
         <p class="settings-label">Streak Saat Ini</p>
@@ -330,6 +330,13 @@
       <div class="settings-card">
         <p class="settings-label">Penyimpanan</p>
         <p class="settings-value">Lokal di perangkat kamu</p>
+      </div>
+      <div class="settings-card">
+        <p class="settings-label" id="label-lang">Bahasa / Language</p>
+        <div class="lang-toggle">
+          <button class="lang-btn active" id="lang-btn-id" onclick="switchLanguage('id')">🇮🇩 Indonesia</button>
+          <button class="lang-btn" id="lang-btn-en" onclick="switchLanguage('en')">🇬🇧 English</button>
+        </div>
       </div>
       <div id="badge-settings-section" style="display:none">
         <div class="badge-earned-card">

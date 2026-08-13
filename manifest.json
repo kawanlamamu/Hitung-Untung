@@ -1,26 +1,6 @@
 {
-  "name": "Hitung Untung",
-  "short_name": "HitungUntung",
-  "description": "Aplikasi pencatat keuangan untuk pekerja gig Indonesia",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f0f4f8",
-  "theme_color": "#2d6a4f",
-  "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}{
-  "name": "Hitung Untung",
-  "short_name": "HitungUntung",
+  "name": "Finansialku",
+  "short_name": "Finansialku",
   "description": "Aplikasi pencatat keuangan untuk pekerja gig Indonesia",
   "start_url": "./index.html",
   "display": "standalone",

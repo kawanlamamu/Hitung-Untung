@@ -7,7 +7,7 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: 80px;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Header */
@@ -196,14 +196,20 @@ body {
   padding-bottom: 8px;
   margin-bottom: 16px;
   -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
 .breakdown-scroll::-webkit-scrollbar { display: none; }
 .breakdown-card {
+  flex: 0 0 160px;
   flex-shrink: 0;
+  scroll-snap-align: start;
   border-radius: 12px;
   padding: 12px 14px;
   min-width: 110px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
 }
 .breakdown-cat-label { font-size: 11px; color: #555; margin-bottom: 6px; line-height: 1.3; }
 .breakdown-cat-amount { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
@@ -249,11 +255,15 @@ body {
 
 /* Lock messages */
 .lock-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   background: #f8f8f8;
   border: 2px dashed #ddd;
   border-radius: 12px;
   padding: 28px 20px;
-  text-align: center;
 }
 .lock-icon  { font-size: 36px; margin-bottom: 10px; }
 .lock-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
@@ -367,9 +377,78 @@ body {
 .badge-earned-title { font-size: 18px; font-weight: 700; color: #FFD700; margin-bottom: 4px; }
 .badge-earned-sub   { font-size: 13px; color: rgba(255,255,255,0.8); }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-box { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 360px; position: relative; }
-.modal-close { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 18px; color: #aaa; cursor: pointer; }
+/* Modals & Overlays */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-box, .modal-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.modal-overlay.active .modal-box,
+.modal-overlay.active .modal-card {
+  transform: translateY(0);
+}
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background-color: #d1d5db;
+  border-radius: 2px;
+  margin: 0 auto 16px auto;
+  flex-shrink: 0;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+.modal-close, .modal-close-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 1.1rem;
+  cursor: pointer;
+  position: static;
+}
 .badge-display { background: linear-gradient(160deg, #1a4a35 0%, #2d6a4f 100%); border-radius: 16px; padding: 32px 20px; text-align: center; }
 .badge-trophy { font-size: 56px; margin-bottom: 12px; }
 .badge-main-title { font-size: 22px; font-weight: 700; color: #FFD700; line-height: 1.2; letter-spacing: 1px; }
@@ -389,12 +468,71 @@ body {
   to   { transform: scale(1);   opacity: 1; }
 }
 
-/* Bottom Nav */
-.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: white; display: flex; border-top: 1px solid #e0e0e0; box-shadow: 0 -2px 10px rgba(0,0,0,0.08); z-index: 100; }
-.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 4px; border: none; background: none; cursor: pointer; color: #aaa; gap: 3px; }
-.nav-btn.active { color: #2d6a4f; }
-.nav-icon  { font-size: 20px; }
-.nav-label { font-size: 10px; font-weight: 600; }
+/* Fixed Bottom Navigation Bar (Matched to Pic 1a) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 64px;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  margin: 0;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+
+.nav-item, .nav-btn {
+  flex: 1 1 0% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px 0 !important;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  min-width: 0 !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item img,
+.nav-item svg,
+.nav-item i,
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 20px;
+  margin-bottom: 3px;
+  object-fit: contain;
+  display: block;
+}
+
+.nav-item span,
+.nav-label {
+  white-space: nowrap;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.nav-item.active, .nav-btn.active {
+  color: #10b981 !important;
+  font-weight: 600;
+}
+
 /* ── EXPENSE TYPE TAGS ───────────────────────── */
 .tag-harian {
   background: #fff3e0;
@@ -732,7 +870,7 @@ body {
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.15); }
+  50%        { transform: scale(1.15); }
 }
 /* ── INCOME TYPE TAGS ────────────────────────── */
 .tag-income-harian {
@@ -792,17 +930,17 @@ body {
   border-radius: 99px;
   transition: width 0.4s ease;
 }
-.daily-budget-bar-safe    { background: #2d6a4f; }
+.daily-budget-bar-safe     { background: #2d6a4f; }
 .daily-budget-bar-warning { background: #e65100; }
-.daily-budget-bar-danger  { background: #c0392b; }
+.daily-budget-bar-danger   { background: #c0392b; }
 .daily-budget-footer {
   font-size: 12px;
   font-weight: 600;
   text-align: right;
 }
-.daily-budget-footer.safe    { color: #2d6a4f; }
+.daily-budget-footer.safe     { color: #2d6a4f; }
 .daily-budget-footer.warning { color: #e65100; }
-.daily-budget-footer.danger  { color: #c0392b; }
+.daily-budget-footer.danger   { color: #c0392b; }
 /* ── LANGUAGE TOGGLE ─────────────────────────── */
 .lang-toggle {
   display: flex;
@@ -825,206 +963,13 @@ body {
   background: #eaf4ef;
   color: #2d6a4f;
 }
-/* ==========================================================================
-   MOBILE-FIRST BOTTOM NAVIGATION & FLOATING CONTROLS
-   ========================================================================== */
-
-/* Fixed Bottom Navigation Bar */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background-color: #ffffff;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-top: 1px solid #e5e7eb;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom, 0px); /* iOS Safe Area support */
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 0;
-  color: #6b7280;
-  text-decoration: none;
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: color 0.2s ease, transform 0.1s ease;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.nav-item svg, 
-.nav-item i {
-  width: 22px;
-  height: 22px;
-  margin-bottom: 2px;
-  fill: currentColor;
-}
-
-.nav-item.active {
-  color: #10b981; /* Primary Emerald Accent */
-  font-weight: 600;
-}
-
-.nav-item:active {
-  transform: scale(0.95);
-}
-
-/* Base Body Padding to Prevent Bottom Nav Overlap */
-body {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-}
-
-/* ==========================================================================
-   MODALS & OVERLAYS
-   ========================================================================== */
-
-/* Backdrop Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: flex-end; /* Slides up from bottom on mobile */
-  justify-content: center;
-  z-index: 2000;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal-overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-/* Bottom Sheet / Modal Card */
-.modal-card {
-  background-color: #ffffff;
-  width: 100%;
-  max-width: 500px;
-  max-height: 85vh;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  padding: 20px 24px;
-  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
-  overflow-y: auto;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-overlay.active .modal-card {
-  transform: translateY(0);
-}
-
-/* Modal Drag Handle Visual Indicator */
-.modal-handle {
-  width: 36px;
-  height: 4px;
-  background-color: #d1d5db;
-  border-radius: 2px;
-  margin: 0 auto 16px auto;
-  flex-shrink: 0;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.modal-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.modal-close-btn {
-  background: #f3f4f6;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4b5563;
-  font-size: 1.1rem;
-  cursor: pointer;
-}
-
-/* Lock Message Overlay State inside Modals/Cards */
-.lock-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 32px 16px;
-  background-color: #f9fafb;
-  border: 1px dashed #d1d5db;
-  border-radius: 12px;
-  color: #6b7280;
-}
-
-.lock-message-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-/* ==========================================================================
-   HORIZONTAL SCROLLABLE BREAKDOWN CARDS
-   ========================================================================== */
-
-.breakdown-scroll {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Hide scrollbar Firefox */
-}
-
-.breakdown-scroll::-webkit-scrollbar {
-  display: none; /* Hide scrollbar Chrome/Safari */
-}
-
-.breakdown-card {
-  flex: 0 0 160px; /* Prevents card squishing on narrow screens */
-  scroll-snap-align: start;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
 
 /* Desktop Viewport Overrides */
 @media (min-width: 640px) {
   .modal-overlay {
-    align-items: center; /* Center modal on desktop screens */
+    align-items: center;
   }
-
-  .modal-card {
+  .modal-card, .modal-box {
     border-radius: 16px;
     max-height: 80vh;
   }

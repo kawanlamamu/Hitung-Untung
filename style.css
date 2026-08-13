@@ -825,3 +825,207 @@ body {
   background: #eaf4ef;
   color: #2d6a4f;
 }
+/* ==========================================================================
+   MOBILE-FIRST BOTTOM NAVIGATION & FLOATING CONTROLS
+   ========================================================================== */
+
+/* Fixed Bottom Navigation Bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 0px); /* iOS Safe Area support */
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.1s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item svg, 
+.nav-item i {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+  fill: currentColor;
+}
+
+.nav-item.active {
+  color: #10b981; /* Primary Emerald Accent */
+  font-weight: 600;
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
+
+/* Base Body Padding to Prevent Bottom Nav Overlap */
+body {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ==========================================================================
+   MODALS & OVERLAYS
+   ========================================================================== */
+
+/* Backdrop Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end; /* Slides up from bottom on mobile */
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Bottom Sheet / Modal Card */
+.modal-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0);
+}
+
+/* Modal Drag Handle Visual Indicator */
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background-color: #d1d5db;
+  border-radius: 2px;
+  margin: 0 auto 16px auto;
+  flex-shrink: 0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modal-close-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* Lock Message Overlay State inside Modals/Cards */
+.lock-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 16px;
+  background-color: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  color: #6b7280;
+}
+
+.lock-message-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+/* ==========================================================================
+   HORIZONTAL SCROLLABLE BREAKDOWN CARDS
+   ========================================================================== */
+
+.breakdown-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.breakdown-scroll::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+.breakdown-card {
+  flex: 0 0 160px; /* Prevents card squishing on narrow screens */
+  scroll-snap-align: start;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Desktop Viewport Overrides */
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center; /* Center modal on desktop screens */
+  }
+
+  .modal-card {
+    border-radius: 16px;
+    max-height: 80vh;
+  }
+}

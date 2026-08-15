@@ -1,6 +1,6 @@
 {
   "name": "Hitung Untung",
-  "short_name": "hitunguntung",
+  "short_name": "Hitung Untung",
   "description": "Aplikasi pencatat keuangan untuk pekerja gig Indonesia",
   "start_url": "./index.html",
   "display": "standalone",

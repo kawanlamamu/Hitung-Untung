@@ -10,6 +10,40 @@
 </head>
 <body>
 
+  <!-- INSTALL BANNER -->
+  <div id="install-banner" class="install-banner" style="display:none">
+    <div class="install-banner-content">
+      <span class="install-banner-icon">📲</span>
+      <div class="install-banner-text">
+        <p class="install-banner-title" id="install-banner-title">Install Aplikasi Ini</p>
+        <p class="install-banner-desc" id="install-banner-desc">Biar datamu aman & bisa dipakai offline</p>
+      </div>
+      <button class="install-banner-btn" id="install-banner-btn" onclick="handleInstallClick()">Install</button>
+      <button class="install-banner-close" onclick="dismissInstallBanner()">✕</button>
+    </div>
+  </div>
+
+  <!-- iOS INSTALL MODAL -->
+  <div id="ios-install-modal" class="modal-overlay" style="display:none" onclick="closeIOSModal(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('ios-install-modal').style.display='none'">✕</button>
+      <p class="ios-modal-title">📲 Install di iPhone</p>
+      <div class="ios-step">
+        <span class="ios-step-num">1</span>
+        <p>Tap tombol <strong>Share</strong> <span class="ios-icon">⬆️</span> di bawah layar Safari</p>
+      </div>
+      <div class="ios-step">
+        <span class="ios-step-num">2</span>
+        <p>Scroll dan pilih <strong>"Add to Home Screen"</strong></p>
+      </div>
+      <div class="ios-step">
+        <span class="ios-step-num">3</span>
+        <p>Tap <strong>"Add"</strong> di pojok kanan atas</p>
+      </div>
+      <button class="submit-btn" onclick="document.getElementById('ios-install-modal').style.display='none'">Mengerti</button>
+    </div>
+  </div>
+
   <div class="header">
     <h1>Hitung Untung 💰</h1>
     <p id="header-subtitle">Aplikasi pencatat keuangan kamu</p>
@@ -337,6 +371,11 @@
           <button class="lang-btn active" id="lang-btn-id" onclick="switchLanguage('id')">🇮🇩 Indonesia</button>
           <button class="lang-btn" id="lang-btn-en" onclick="switchLanguage('en')">🇬🇧 English</button>
         </div>
+      </div>
+      <div class="settings-card" id="manual-install-card" style="display:none">
+        <p class="settings-label">Aplikasi belum terinstall</p>
+        <p class="settings-value" style="margin-bottom:10px">Install agar datamu aman & bisa dipakai offline</p>
+        <button class="submit-btn-sm" onclick="handleInstallClick()">📲 Install Aplikasi</button>
       </div>
       <div id="badge-settings-section" style="display:none">
         <div class="badge-earned-card">

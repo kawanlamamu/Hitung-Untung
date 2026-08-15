@@ -10,6 +10,13 @@ function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 
+function isIOSSafari() {
+  const ua = navigator.userAgent;
+  const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  return isIOSDevice && isSafari;
+}
+
 function wasInstallDismissed() {
   return localStorage.getItem('installBannerDismissed') === 'true';
 }
@@ -38,9 +45,12 @@ function initInstallBanner() {
   // User dismissed the top banner before? Don't nag with it again.
   if (wasInstallDismissed()) return;
 
-  if (isIOS()) {
-    // iOS never fires beforeinstallprompt — show banner immediately with instructions
+  if (isIOS() && isIOSSafari()) {
+    // iOS Safari: show banner with install instructions
     showInstallBanner(true);
+  } else if (isIOS() && !isIOSSafari()) {
+    // iOS but NOT Safari (Chrome/Firefox on iPhone): tell them to switch browser
+    showIOSWrongBrowserBanner();
   }
   // Android/Desktop: banner shows automatically when beforeinstallprompt fires above
 }
@@ -105,7 +115,40 @@ function closeIOSModal(event) {
     document.getElementById('ios-install-modal').style.display = 'none';
   }
 }
+function showIOSWrongBrowserBanner() {
+  const banner = document.getElementById('install-banner');
+  const btn    = document.getElementById('install-banner-btn');
+  const title  = document.getElementById('install-banner-title');
+  const desc   = document.getElementById('install-banner-desc');
+  if (!banner) return;
 
+  const isEN = currentLang === 'en';
+
+  title.textContent = isEN ? 'Open in Safari to Install' : 'Buka di Safari untuk Install';
+  desc.textContent   = isEN
+    ? 'Installing only works in Safari on iPhone'
+    : 'Install aplikasi hanya bisa lewat browser Safari di iPhone';
+  btn.textContent     = isEN ? '📋 Copy Link for Safari' : '📋 Salin Link untuk Safari';
+  btn.onclick = copyLinkForSafari;
+
+  banner.style.display = 'block';
+}
+
+function copyLinkForSafari() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(function() {
+    const btn = document.getElementById('install-banner-btn');
+    const isEN = currentLang === 'en';
+    btn.textContent = isEN ? '✅ Link Copied!' : '✅ Link Tersalin!';
+    setTimeout(function() {
+      btn.textContent = isEN ? '📋 Copy Link for Safari' : '📋 Salin Link untuk Safari';
+    }, 2500);
+  }).catch(function() {
+    alert(currentLang === 'en'
+      ? 'Please copy this link manually and open it in Safari:\n' + url
+      : 'Mohon salin link ini secara manual dan buka di Safari:\n' + url);
+  });
+}
 // ─── LANGUAGE ────────────────────────────────────────
 let currentLang = localStorage.getItem('lang') || 'id';
 

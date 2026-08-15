@@ -1,3 +1,111 @@
+// ─── INSTALL PROMPT ──────────────────────────────────
+let deferredInstallPrompt = null;
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.navigator.standalone === true;
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function wasInstallDismissed() {
+  return localStorage.getItem('installBannerDismissed') === 'true';
+}
+
+// Android/Chrome/Brave/Edge fire this event when installable
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+// Fires after successful install
+window.addEventListener('appinstalled', function() {
+  hideInstallBanner();
+  localStorage.setItem('installBannerDismissed', 'true');
+});
+
+function initInstallBanner() {
+  // Already installed? Never show banner or manual card.
+  if (isStandalone()) return;
+
+  // Show manual install option in Settings regardless of dismissal
+  const manualCard = document.getElementById('manual-install-card');
+  if (manualCard) manualCard.style.display = 'block';
+
+  // User dismissed the top banner before? Don't nag with it again.
+  if (wasInstallDismissed()) return;
+
+  if (isIOS()) {
+    // iOS never fires beforeinstallprompt — show banner immediately with instructions
+    showInstallBanner(true);
+  }
+  // Android/Desktop: banner shows automatically when beforeinstallprompt fires above
+}
+
+function showInstallBanner(isIOSDevice) {
+  const banner = document.getElementById('install-banner');
+  const btn    = document.getElementById('install-banner-btn');
+  const title  = document.getElementById('install-banner-title');
+  const desc   = document.getElementById('install-banner-desc');
+  if (!banner) return;
+
+  const isEN = currentLang === 'en';
+
+  if (isIOSDevice) {
+    title.textContent = isEN ? 'Install This App' : 'Install Aplikasi Ini';
+    desc.textContent   = isEN ? 'Tap for instructions' : 'Tap untuk lihat caranya';
+    btn.textContent     = isEN ? 'How?' : 'Caranya';
+  } else {
+    title.textContent = isEN ? 'Install This App' : 'Install Aplikasi Ini';
+    desc.textContent   = isEN ? 'Keep your data safe & use offline' : 'Biar datamu aman & bisa dipakai offline';
+    btn.textContent     = isEN ? 'Install' : 'Install';
+  }
+
+  banner.style.display = 'block';
+}
+
+function hideInstallBanner() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+function dismissInstallBanner() {
+  hideInstallBanner();
+  localStorage.setItem('installBannerDismissed', 'true');
+}
+
+async function handleInstallClick() {
+  if (isIOS()) {
+    document.getElementById('ios-install-modal').style.display = 'flex';
+    return;
+  }
+
+  if (!deferredInstallPrompt) {
+    // Fallback: browser doesn't support auto-prompt, show generic message
+    alert(currentLang === 'en'
+      ? 'Open your browser menu and tap "Install app" or "Add to Home Screen"'
+      : 'Buka menu browser lalu tap "Install app" atau "Add to Home Screen"');
+    return;
+  }
+
+  deferredInstallPrompt.prompt();
+  const result = await deferredInstallPrompt.userChoice;
+  if (result.outcome === 'accepted') {
+    hideInstallBanner();
+  }
+  deferredInstallPrompt = null;
+  localStorage.setItem('installBannerDismissed', 'true');
+}
+
+function closeIOSModal(event) {
+  if (!event || event.target.id === 'ios-install-modal') {
+    document.getElementById('ios-install-modal').style.display = 'none';
+  }
+}
+
 // ─── LANGUAGE ────────────────────────────────────────
 let currentLang = localStorage.getItem('lang') || 'id';
 
@@ -168,6 +276,7 @@ window.onload = function() {
   initRiwayat();
   restoreCalcInputs();
   applyLanguage();
+  initInstallBanner();
 }
 
 // Auto-refresh date every minute (in case app stays open overnight)

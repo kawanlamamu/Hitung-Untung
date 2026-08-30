@@ -939,21 +939,3 @@ body {
   cursor: pointer;
   margin-top: 8px;
 }
-
-/* ── CHECK UPDATE BUTTON ─────────────────────── */
-.check-update-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: #eaf4ef;
-  color: #2d6a4f;
-  border: 1px solid #2d6a4f;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.check-update-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}

@@ -76,7 +76,7 @@
       <h2 class="section-title">Tambah Transaksi</h2>
       <div class="form-group">
         <label id="label-tanggal">Tanggal</label>
-        <input type="date" id="input-date">
+        <input type="date" id="input-date" onchange="markDatePicked()">
       </div>
       <div class="form-group">
         <label id="label-keterangan">Keterangan</label>
@@ -124,6 +124,7 @@
         </div>
       </div>
       <button class="submit-btn" id="btn-simpan" onclick="addTransaction()">+ Simpan Transaksi</button>
+      <button class="cancel-edit-btn" id="btn-cancel-edit" onclick="cancelEditTransaction()" style="display:none">✕ Batal Edit</button>
     </div>
   </div>
 

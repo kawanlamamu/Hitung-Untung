@@ -284,6 +284,7 @@ function applyLanguage() {
 // ─── DATA ────────────────────────────────────────────
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let selectedType = 'income';
+let editingTransactionId = null;
 let selectedExpenseType = 'harian';
 let budgetLimit  = parseInt(localStorage.getItem('budgetLimit')) || 0;
 let selectedIncomeType = 'harian';
@@ -323,11 +324,13 @@ window.onload = function() {
 }
 
 // Auto-refresh date every minute (in case app stays open overnight)
+// Only auto-corrects if user hasn't manually picked a different date
+let userPickedDate = false;
 setInterval(function() {
   const today     = getToday();
   const dateInput = document.getElementById('input-date');
   const harianPicker = document.getElementById('picker-harian');
-  if (dateInput && dateInput.value !== today) {
+  if (dateInput && !userPickedDate && dateInput.value !== today) {
     dateInput.value = today;
     renderScorecard();
   }
@@ -336,6 +339,10 @@ setInterval(function() {
     renderHarian();
   }
 }, 60000);
+
+function markDatePicked() {
+  userPickedDate = true;
+}
 
 // ─── DATE HELPERS ────────────────────────────────────
 function getToday() {
@@ -348,6 +355,7 @@ function getPreviousDay(dateStr) {
 }
 function setDefaultDate() {
   document.getElementById('input-date').value = getToday();
+  userPickedDate = false;
 }
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -596,16 +604,35 @@ function addTransaction() {
 
   const prevStreak = getCurrentStreak();
 
-  transactions.push({
-    id:          Date.now(),
-    date:        date || getToday(),
-    desc,
-    amount,
-    type:        selectedType,
-    incomeType:  selectedType === 'income'  ? selectedIncomeType  : null,
-    expenseType: selectedType === 'expense' ? selectedExpenseType : null,
-    category:    selectedType === 'expense' ? getSelectedCategory() : null
-  });
+  if (editingTransactionId) {
+    // ── UPDATE existing transaction ──
+    const idx = transactions.findIndex(t => t.id === editingTransactionId);
+    if (idx !== -1) {
+      transactions[idx] = {
+        id:          editingTransactionId,
+        date:        date || getToday(),
+        desc,
+        amount,
+        type:        selectedType,
+        incomeType:  selectedType === 'income'  ? selectedIncomeType  : null,
+        expenseType: selectedType === 'expense' ? selectedExpenseType : null,
+        category:    selectedType === 'expense' ? getSelectedCategory() : null
+      };
+    }
+    cancelEditTransaction();
+  } else {
+    // ── ADD new transaction ──
+    transactions.push({
+      id:          Date.now(),
+      date:        date || getToday(),
+      desc,
+      amount,
+      type:        selectedType,
+      incomeType:  selectedType === 'income'  ? selectedIncomeType  : null,
+      expenseType: selectedType === 'expense' ? selectedExpenseType : null,
+      category:    selectedType === 'expense' ? getSelectedCategory() : null
+    });
+  }
 
   localStorage.setItem('transactions', JSON.stringify(transactions));
   document.getElementById('input-desc').value   = '';
@@ -624,6 +651,46 @@ function addTransaction() {
   renderScorecard();
   renderCategoryBreakdown();
   checkMilestoneUnlock(prevStreak, newStreak);
+}
+
+function editTransaction(id) {
+  const tx = transactions.find(t => t.id === id);
+  if (!tx) return;
+
+  editingTransactionId = id;
+  switchTab('beranda');
+
+  document.getElementById('input-date').value   = tx.date;
+  document.getElementById('input-desc').value   = tx.desc;
+  document.getElementById('input-amount').value = tx.amount;
+  userPickedDate = true; // keep the transaction's original date while editing
+
+  setType(tx.type);
+  if (tx.type === 'income') {
+    setIncomeType(tx.incomeType || 'harian');
+  } else {
+    setExpenseType(tx.expenseType || 'harian');
+    const catBtn = document.querySelector(`.cat-btn[data-cat="${tx.category || 'lainnya'}"]`);
+    if (catBtn) selectCategory(catBtn);
+  }
+
+  const submitBtn = document.getElementById('btn-simpan');
+  if (submitBtn) submitBtn.textContent = '✏️ Update Transaksi';
+  const cancelBtn = document.getElementById('btn-cancel-edit');
+  if (cancelBtn) cancelBtn.style.display = 'block';
+
+  document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEditTransaction() {
+  editingTransactionId = null;
+  const submitBtn = document.getElementById('btn-simpan');
+  if (submitBtn) submitBtn.textContent = '+ Simpan Transaksi';
+  const cancelBtn = document.getElementById('btn-cancel-edit');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  document.getElementById('input-desc').value   = '';
+  document.getElementById('input-amount').value = '';
+  setDefaultDate();
 }
 
 function updateSummary() {
@@ -757,6 +824,7 @@ function buildHistoryItem(t) {
         <span class="history-amount ${isIncome ? 'income' : 'expense'}">
           ${isIncome ? '+' : '-'} ${formatRupiah(t.amount)}
         </span>
+        <button class="edit-btn" onclick="editTransaction(${t.id})">✏️</button>
         <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
       </div>
     </div>

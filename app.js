@@ -1822,3 +1822,71 @@ function confirmReset() {
     switchTab('beranda');
   }
 }
+
+// ─── CHECK FOR UPDATE ────────────────────────────────
+function checkForUpdate() {
+  const btn = document.getElementById('check-update-btn');
+  if (!('serviceWorker' in navigator)) {
+    alert('Fitur update tidak didukung di browser ini.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '🔄 Memeriksa...';
+
+  navigator.serviceWorker.getRegistration().then(function(reg) {
+    if (!reg) {
+      btn.disabled = false;
+      btn.textContent = '🔄 Cek Update';
+      alert('Tidak bisa memeriksa update saat ini. Coba lagi nanti.');
+      return;
+    }
+
+    // Ask the browser to check the server for a new sw.js
+    reg.update().then(function() {
+      setTimeout(function() {
+        // A worker is already waiting to activate — update ready
+        if (reg.waiting) {
+          promptUpdate(reg.waiting, btn);
+          return;
+        }
+
+        // A new worker is installing right now — wait for it to finish
+        if (reg.installing) {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              promptUpdate(newWorker, btn);
+            } else if (newWorker.state === 'installed') {
+              // First-ever install, not an update
+              btn.disabled = false;
+              btn.textContent = '🔄 Cek Update';
+              alert('Sudah versi terbaru! 🎉');
+            }
+          });
+          return;
+        }
+
+        // Nothing new found
+        btn.disabled = false;
+        btn.textContent = '🔄 Cek Update';
+        alert('Sudah versi terbaru! 🎉');
+      }, 1000); // small delay to let the browser finish checking
+    });
+  });
+}
+
+function promptUpdate(worker, btn) {
+  btn.disabled = false;
+  btn.textContent = '🔄 Cek Update';
+
+  const confirmed = window.confirm(
+    '🎉 Update tersedia!\n\nDatamu aman, tidak akan hilang. Update sekarang untuk mendapatkan fitur terbaru?'
+  );
+
+  if (confirmed) {
+    worker.postMessage('SKIP_WAITING');
+    // Page will reload automatically once new worker takes control
+    // (handled by the controllerchange listener in index.html)
+  }
+}

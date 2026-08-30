@@ -351,7 +351,6 @@
       <div class="settings-card">
         <p class="settings-label">Versi Aplikasi</p>
         <p class="settings-value">Hitung Untung v.2 by <a href="https://www.instagram.com/kawanlamamu/" target="_blank" rel="noopener" style="color:#2d6a4f;text-decoration:none;font-weight:700">@kawanlamamu</a> 📸</p>
-        <button class="check-update-btn" id="check-update-btn" onclick="checkForUpdate()">🔄 Cek Update</button>
       </div>
       <div class="settings-card">
         <p class="settings-label">Streak Saat Ini</p>
@@ -454,15 +453,7 @@
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').then(function(reg) {
-        window.swRegistration = reg;
-      });
-      // Reload once the new service worker takes over
-      navigator.serviceWorker.addEventListener('controllerchange', function() {
-        if (window.swUpdateReloading) return;
-        window.swUpdateReloading = true;
-        window.location.reload();
-      });
+      navigator.serviceWorker.register('./sw.js');
     }
   </script>
 </body>
